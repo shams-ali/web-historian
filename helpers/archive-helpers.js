@@ -1,5 +1,6 @@
 var FS = require('fs');
 var PATH = require('path');
+var REQUEST = require('request');
 var _ = require('underscore');
 
 /*
@@ -33,9 +34,9 @@ exports.readListOfUrls = function(cb) {
       exports.returnWithStatusCode(res, 404);
     } else {
       console.log('found sites.txt');
-      var str = file.toString().split('\n');
-      console.log(str, 'this is str');
-      cb(str);
+      var strArr = file.toString().split('\n');
+      console.log(strArr, 'this is str');
+      cb(strArr);
     }
   });
 };
@@ -49,7 +50,7 @@ exports.isUrlInList = function(url, cb) {
     } else {
       console.log('found sites.txt');
       var str = file.toString().split('\n');
-      str.indexOf(url) > -1 ? cb(true) : cb(false);
+      str.indexOf(url) > -1 ? cb(true, url) : cb(false, url);
     }
   });
 };
@@ -79,8 +80,8 @@ exports.isUrlArchived = function(url, cb) {
   var dirPath = exports.paths.archivedSites + '/' + url;
   FS.readdir( dirPath, (err, files) => {
     if (err) {
-      console.log('cannot find director of /' + url);
-      cb(false);
+      console.log('cannot find directory of /' + url);
+      cb(false, url);
     } else {
       console.log('found dir of /' + url);
       _.map(files, cb);
@@ -90,19 +91,36 @@ exports.isUrlArchived = function(url, cb) {
 };
 
 exports.downloadUrls = function(urlArray) {
+  console.log('$$$$$$$ start of downloadUrls $$$$$$$');
+  console.log('urlArray', urlArray);
   //get an array of our current list
   //check the paramateres to see if it is in our list
     //if in the list do nothing
     //if not in the list create the directory
   _.each(urlArray, function(url) {
-    exports.isUrlInList(url, function(bool) {
-      if (bool) {
-        return;
-      } else {
+
+    exports.isUrlInList(url, function(bool, url) {
+      // if (bool) {
+      //   return;
+      // } else 
+      {
+
         FS.mkdir(exports.paths.archivedSites + '/' + url, (err, folder) => {
           if (err) {
             console.log('cannot make dir of /' + url);
           }
+
+          REQUEST('https://' + url, (err, res, body) =>{
+            if (err) {
+              console.log('could not fulfill request to ' + url);
+            }
+            
+            FS.writeFile(exports.paths.archivedSites + '/' + url + '/html', body, 'utf8', (err) => {
+              if (err) {
+                console.log('could not write html file from ' + url);
+              }
+            });
+          });
         });    
       }
     });
