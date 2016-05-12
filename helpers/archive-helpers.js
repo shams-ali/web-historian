@@ -25,7 +25,7 @@ exports.initialize = function(pathsObj) {
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function() {
+exports.readListOfUrls = function(cb) {
   FS.readFile( exports.paths.list, (err, file) => {
     if (err) {
       console.log('cannot find sites.txt');
@@ -33,33 +33,89 @@ exports.readListOfUrls = function() {
       exports.returnWithStatusCode(res, 404);
     } else {
       console.log('found sites.txt');
-      var str = file.toString();
-      console.log(str, 'this is string');
-      return str;
+      var str = file.toString().split('\n');
+      console.log(str, 'this is str');
+      cb(str);
     }
   });
 };
 
-exports.isUrlInList = function(url) {
-  var urlList = exports.readListOfUrls();
-  console.log(urlList, 'this is URLLIST');
-  return urlList.indexOf(url) > -1 ? true : false;
+exports.isUrlInList = function(url, cb) {
+  FS.readFile( exports.paths.list, (err, file) => {
+    if (err) {
+      console.log('cannot find sites.txt');
+      // throw(err);
+      exports.returnWithStatusCode(res, 404);
+    } else {
+      console.log('found sites.txt');
+      var str = file.toString().split('\n');
+      str.indexOf(url) > -1 ? cb(true) : cb(false);
+    }
+  });
 };
 
-exports.addUrlToList = function(url) {
-  var urlList = exports.readListOfUrls();
-
-  urlList[url] = url;
+exports.addUrlToList = function(url, cb) {
+  FS.readFile( exports.paths.list, (err, file) => {
+    if (err) {
+      console.log('cannot find sites.txt');
+      // throw(err);
+      exports.returnWithStatusCode(res, 404);
+    } else {
+      console.log('found sites.txt');
+      var str = file.toString().split('\n');
+      str.push(url);
+      str = str.join('\n');
+      FS.writeFile( exports.paths.list, str, 'utf8', (err) => {
+        if (err) {
+          console.log('Cannot write url to sites.txt');
+        }
+        cb();
+      });
+    }
+  });
 };
 
-exports.isUrlArchived = function(url) {
-  //check if archives/sites contains files for url
-  //if so, return files
-  //if not return false
+exports.isUrlArchived = function(url, cb) {
+  var dirPath = exports.paths.archivedSites + '/' + url;
+  FS.readdir( dirPath, (err, files) => {
+    if (err) {
+      console.log('cannot find director of /' + url);
+      cb(false);
+    } else {
+      console.log('found dir of /' + url);
+      _.map(files, cb);
+      
+    }
+  });
 };
 
-exports.downloadUrls = function(url) {
+exports.downloadUrls = function(urlArray) {
+  //get an array of our current list
+  //check the paramateres to see if it is in our list
+    //if in the list do nothing
+    //if not in the list create the directory
+  _.each(urlArray, function(url) {
+    exports.isUrlInList(url, function(bool) {
+      if (bool) {
+        return;
+      } else {
+        FS.mkdir(exports.paths.archivedSites + '/' + url, (err, folder) => {
+          if (err) {
+            console.log('cannot make dir of /' + url);
+          }
+        });    
+      }
+    });
+  });
   //get request from url
   //check isURLinlist
   //store in JSON object
 };
+
+
+
+
+
+
+
+

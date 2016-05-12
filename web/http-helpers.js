@@ -29,7 +29,8 @@ exports.serveAssets = function(res, asset, callback) {
   // Write some code here that helps serve up your static files!
   // (Static files are things like html (yours or archived from others...),
   // css, or anything that doesn't change often.)
-    //read asset and serve if found, else respond with 404
+  
+  //read asset and serve if found, else respond with 404
   var filePath = documentRoot + asset;
   fs.readFile( filePath, (err, file) => {
     if (err) {
@@ -61,7 +62,6 @@ exports.serveOtherSites = function(res, asset, callback) {
 
     fs.readFile(filePath, (err, file) => {
       if (err) {
-        console.log('whatever whatever whatever');
         exports.returnWithStatusCode(res, 404);
       }
 
@@ -72,53 +72,45 @@ exports.serveOtherSites = function(res, asset, callback) {
       res.end(file);
 
     });
-
   });
+};
 
-  exports.postHandler = function (res, req) { 
-    // serve all files in that folder
+exports.postHandler = function (res, req) { 
+  // serve all files in that folder
 
-    var body = [];
-    var asset;
-    req.on('data', (chunk) => {
-      body.push(chunk);
-    });
-    req.on('end', () => { // this is asynchronous!!!!!1
-      body.join('');
-      // body = body.toString();
-      asset = body.toString();
-      console.log('woopWOOPwoop', asset);
-    });
-
+  var body = [];
+  var asset;
+  req.on('data', (chunk) => {
+    body.push(chunk);
+  });
+  req.on('end', () => {
+    body = body.join('');
+    asset = body.split('url=').join('');
+  
     var filePath = archive.paths.list;
-    console.log('asset in postHandler is', asset);
 
-    fs.readFile(filePath, (err, file) => {
+    fs.readFile(filePath, 'utf8', (err, file) => {
       if (err) {
         console.log('cannot find sites.txt');
         exports.returnWithStatusCode(res, 404);
-      } 
-      
+      }
+  
       console.log('found sites.txt');
       var str = file.toString();
-      console.log(str, 'this is string');
-      str.concat('\n' + asset);
-      console.log(str, 'this is the new string');
-
-      //on success of reading file
-        // do stuff to file contents
+      str = str.concat(asset + '\n');
       
       // write the file contents into a new file
-      fs.writeFile(archived.paths.list, str, 'utf8', (err) => {
+      fs.writeFile(filePath, str, 'utf8', (err) => {
         if (err) {
           console.log('could not write site.txt');
         } 
         //on success respond with successful write!
-        res.writeHead(200, exports.headers);
+        res.writeHead(302, exports.headers);
         res.end();
       });
     });
-  };
+  });
+};
 
 
 
@@ -130,6 +122,6 @@ exports.serveOtherSites = function(res, asset, callback) {
   //   //serve static files  
   //   filePath = documentRoot + asset;
   // }
-};
+
 
 // As you progress, keep thinking about what helper functions you can put here!

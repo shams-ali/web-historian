@@ -2,7 +2,7 @@ var URL = require('url');
 var fs = require('fs');
 var PATH = require('path');
 var archive = require('../helpers/archive-helpers');
-var httpHelpers = require('./http-helpers.js');
+var httpHelper = require('./http-helpers.js');
 // require more modules/folders here!
 
 var documentRoot = './web/public/';
@@ -15,13 +15,19 @@ exports.handleRequest = function (req, res) {
   var pathname = parsedURL.pathname.replace(/\/$/, '');
   
   if (req.method === 'POST') {
-    httpHelpers.postHandler(res, req);
-  } else if (pathname === '') { 
-    pathname = 'index.html'; 
-    httpHelpers.serveAssets(res, pathname);
+    console.log('hi');
+    httpHelper.postHandler(res, req);
+  } 
+  if (pathname === '' || pathname === '/styles.css' || pathname === '/loading.html') { 
+    console.log('pathname on get and no string', pathname);
+    if (pathname === '' ) {
+      pathname = 'index.html';
+    }
+    console.log('GET pathname', pathname);
+    httpHelper.serveAssets(res, pathname); 
   } else {
     console.log(pathname, 'pathname');
-    httpHelpers.serveOtherSites(res, pathname);
+    httpHelper.serveOtherSites(res, pathname);
   }
 
 
