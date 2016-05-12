@@ -10,24 +10,26 @@ var documentRoot = './web/public/';
 exports.handleRequest = function (req, res) {
 
   console.log('Serving request type ' + req.method + ' for url ' + req.url);
-  
+  var parsedURL = URL.parse(req.url);
   // get path of url use url module and parse. remove trailing '/'
-  var pathname = URL.parse(req.url).pathname.replace(/\/$/, '');
+  var pathname = parsedURL.pathname.replace(/\/$/, '');
+  
+  if (req.method === 'POST') {
+    httpHelpers.postHandler(res, req);
+  } else if (pathname === '') { 
+    pathname = 'index.html'; 
+    httpHelpers.serveAssets(res, pathname);
+  } else {
+    console.log(pathname, 'pathname');
+    httpHelpers.serveOtherSites(res, pathname);
+  }
 
-  if (pathname === '') { pathname = 'index.html'; }
 
-  httpHelpers.serveAssets(res, pathname);
+  // check if path is valid
+    // if it is valid, serve the site
+
+    // else write URL into archvies/site.txt
+      //respond with error
+
+  
 };
-
-var returnWithStatusCode = function(response, statusCode) {
-  response.writeHead(statusCode, defaultCorsHeaders);
-  response.end();
-};
-
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
-

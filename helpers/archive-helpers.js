@@ -26,16 +26,40 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function() {
+  FS.readFile( exports.paths.list, (err, file) => {
+    if (err) {
+      console.log('cannot find sites.txt');
+      // throw(err);
+      exports.returnWithStatusCode(res, 404);
+    } else {
+      console.log('found sites.txt');
+      var str = file.toString();
+      console.log(str, 'this is string');
+      return str;
+    }
+  });
 };
 
-exports.isUrlInList = function() {
+exports.isUrlInList = function(url) {
+  var urlList = exports.readListOfUrls();
+  console.log(urlList, 'this is URLLIST');
+  return urlList.indexOf(url) > -1 ? true : false;
 };
 
-exports.addUrlToList = function() {
+exports.addUrlToList = function(url) {
+  var urlList = exports.readListOfUrls();
+
+  urlList[url] = url;
 };
 
-exports.isUrlArchived = function() {
+exports.isUrlArchived = function(url) {
+  //check if archives/sites contains files for url
+  //if so, return files
+  //if not return false
 };
 
-exports.downloadUrls = function() {
+exports.downloadUrls = function(url) {
+  //get request from url
+  //check isURLinlist
+  //store in JSON object
 };
