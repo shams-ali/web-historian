@@ -17,11 +17,9 @@ exports.handleRequest = function (req, res) {
   if (req.method === 'POST') {
     console.log('hi');
     httpHelper.postHandler(res, req);
-  } 
-  if (pathname === '' || pathname === '/styles.css' || pathname === '/loading.html') { 
-    console.log('pathname on get and no string', pathname);
+  } else if (pathname === '' || pathname === '/styles.css' || pathname === '/loading.html') { 
     if (pathname === '' ) {
-      pathname = 'index.html';
+      pathname = '/index.html';
     }
     console.log('GET pathname', pathname);
     httpHelper.serveAssets(res, pathname); 

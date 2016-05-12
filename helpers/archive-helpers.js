@@ -91,43 +91,25 @@ exports.isUrlArchived = function(url, cb) {
 };
 
 exports.downloadUrls = function(urlArray) {
-  console.log('$$$$$$$ start of downloadUrls $$$$$$$');
-  console.log('urlArray', urlArray);
-  //get an array of our current list
-  //check the paramateres to see if it is in our list
-    //if in the list do nothing
-    //if not in the list create the directory
   _.each(urlArray, function(url) {
-
-    exports.isUrlInList(url, function(bool, url) {
-      // if (bool) {
-      //   return;
-      // } else 
-      {
-
-        FS.mkdir(exports.paths.archivedSites + '/' + url, (err, folder) => {
-          if (err) {
-            console.log('cannot make dir of /' + url);
-          }
-
-          REQUEST('https://' + url, (err, res, body) =>{
-            if (err) {
-              console.log('could not fulfill request to ' + url);
-            }
-            
-            FS.writeFile(exports.paths.archivedSites + '/' + url + '/html', body, 'utf8', (err) => {
-              if (err) {
-                console.log('could not write html file from ' + url);
-              }
-            });
-          });
-        });    
+    FS.mkdir(exports.paths.archivedSites + '/' + url, (err, folder) => {
+      if (err) {
+        console.log('cannot make dir of /' + url);
       }
-    });
+
+      REQUEST('https://' + url, (err, res, body) =>{
+        if (err) {
+          console.log('could not fulfill request to ' + url);
+        }
+        
+        FS.writeFile(exports.paths.archivedSites + '/' + url + '/html', body, 'utf8', (err) => {
+          if (err) {
+            console.log('could not write html file from ' + url);
+          }
+        });
+      });
+    });    
   });
-  //get request from url
-  //check isURLinlist
-  //store in JSON object
 };
 
 

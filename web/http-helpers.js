@@ -42,6 +42,7 @@ exports.serveAssets = function(res, asset, callback) {
       var headers = exports.headers;
       headers['Content-Type'] = contentTypes[PATH.extname(asset)];
 
+      console.log('this is file in serveAssets', file);
       res.writeHead(200, headers);
       res.end(file);
     }
@@ -89,26 +90,69 @@ exports.postHandler = function (res, req) {
   
     var filePath = archive.paths.list;
 
-    fs.readFile(filePath, 'utf8', (err, file) => {
-      if (err) {
-        console.log('cannot find sites.txt');
-        exports.returnWithStatusCode(res, 404);
+    //check archives
+    archive.isUrlArchived(asset, (bool, url) =>{
+      //if in archives send html
+      console.log('in isUrlArchived');
+      console.log('bool is ', bool);
+      console.log('url is ', url);
+      console.log('asset is ', asset);
+      if (bool) {
+        var archivedPath = archive.paths.archivedSites + '/' + asset + '/' + bool;
+        console.log('archived path is ', archivedPath);
+        fs.readFile(archivedPath, 'utf8', (err, file) => {
+          if (err) {
+            console.log('cant read html for ', asset);
+            console.log('err is', err);
+          }
+          var headers = exports.headers;
+          headers['Content-Type'] = 'text/html';
+          res.writeHead(200, headers);
+          res.end(file);
+        });
+      } else {
+        fs.readFile(filePath, 'utf8', (err, file) => {
+          if (err) {
+            console.log('cannot find sites.txt');
+            exports.returnWithStatusCode(res, 404);
+          }
+          
+          console.log('found sites.txt');
+          var str = file.toString();
+          if (str.indexOf(asset) === -1) {
+            str = str.concat(asset + '\n');
+          }
+          // write the file contents into a new file
+          fs.writeFile(filePath, str, 'utf8', (err) => {
+            if (err) {
+              console.log('could not write site.txt');
+            }
+
+            console.log('successfully wrote site.text');
+            // //on success respond with successful write!
+            // res.writeHead(302, exports.headers);
+            // res.end();
+            //read loading.html
+            fs.readFile('/Users/student/Codes/2016-04-web-historian/web/public/' + 'loading.html', (err, file) => {
+              if (err) {
+                console.log('cant read loading html');
+              }
+              console.log('$$$$$ trying to serve loading.html');
+
+              var headers = exports.headers;
+              headers['Content-Type'] = 'text/html';
+              res.writeHead(302, headers);
+              console.log(file.toString(), 'this is file');
+              res.end(file);
+            });
+              //if successful read then send loading html
+          });
+        });
+        
       }
-  
-      console.log('found sites.txt');
-      var str = file.toString();
-      str = str.concat(asset + '\n');
-      
-      // write the file contents into a new file
-      fs.writeFile(filePath, str, 'utf8', (err) => {
-        if (err) {
-          console.log('could not write site.txt');
-        } 
-        //on success respond with successful write!
-        res.writeHead(302, exports.headers);
-        res.end();
-      });
     });
+        //if in sites.txt send loading.html
+        //else add to sites.txt then send loading.html
   });
 };
 
